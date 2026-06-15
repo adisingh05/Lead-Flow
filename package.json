@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "build": "turbo run build",
+    "build": "npm run build --workspaces --if-present",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "npm run --workspace=packages/db generate",

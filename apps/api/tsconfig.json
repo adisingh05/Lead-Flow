@@ -15,5 +15,6 @@
     "incremental": true,
     "skipLibCheck": true,
     "strict": true
-  }
+  },
+  "exclude": ["**/*.spec.ts", "node_modules", "dist"]
 }

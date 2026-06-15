@@ -1,11 +1,12 @@
-import { Module } from '@nestjs/common';
-import { CompanyModule } from './company/company.module';
-import { ContactModule } from './contact/contact.module';
-import { LeadModule } from './lead/lead.module';
-import { CampaignModule } from './campaign/campaign.module';
-import { IcpModule } from './icp/icp.module';
-import { SequenceModule } from './sequence/sequence.module';
-import { ActivityModule } from './activity/activity.module';
+import { Module } from "@nestjs/common";
+import { CompanyModule } from "./company/company.module";
+import { ContactModule } from "./contact/contact.module";
+import { LeadModule } from "./lead/lead.module";
+import { CampaignModule } from "./campaign/campaign.module";
+import { IcpModule } from "./icp/icp.module";
+import { SequenceModule } from "./sequence/sequence.module";
+import { ActivityModule } from "./activity/activity.module";
+import { MessageModule } from "./message/message.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ActivityModule } from './activity/activity.module';
     IcpModule,
     SequenceModule,
     ActivityModule,
+    MessageModule,
   ],
   exports: [
     CompanyModule,
@@ -25,6 +27,7 @@ import { ActivityModule } from './activity/activity.module';
     IcpModule,
     SequenceModule,
     ActivityModule,
+    MessageModule,
   ],
 })
 export class CrmModule {}

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { Send, Plus, Loader2, Sparkles, Sliders, Play, Pause, Calendar, Clock, ListChecks } from 'lucide-react';
+import { Send, Plus, Loader2, Sparkles, Sliders, Play, Pause, Calendar, Clock, ListChecks, ChevronRight } from 'lucide-react';
 import { CampaignDto, SequenceDto, IcpDto, CampaignType } from '@leadflow/types';
 
 export default function CampaignsPage() {

@@ -1,16 +1,29 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
-import { CampaignService } from './campaign.service';
-import { ClerkAuthGuard } from '../../auth/clerk-auth.guard';
-import { CurrentUser } from '../../auth/current-user.decorator';
-import { AuthUserContext, CreateCampaignInput, CampaignStatus } from '@leadflow/types';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  ParseUUIDPipe,
+} from "@nestjs/common";
+import { CampaignService } from "./campaign.service";
+import { ClerkAuthGuard } from "../../auth/clerk-auth.guard";
+import { CurrentUser } from "../../auth/current-user.decorator";
+import { AuthUserContext } from "@leadflow/types";
+import { CreateCampaignDto, UpdateCampaignStatusDto } from "../dto/crm.dto";
 
-@Controller('campaigns')
+@Controller("campaigns")
 @UseGuards(ClerkAuthGuard)
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
 
   @Post()
-  create(@CurrentUser() user: AuthUserContext, @Body() input: CreateCampaignInput) {
+  create(
+    @CurrentUser() user: AuthUserContext,
+    @Body() input: CreateCampaignDto,
+  ) {
     return this.campaignService.create(user.organizationId, input);
   }
 
@@ -19,17 +32,24 @@ export class CampaignController {
     return this.campaignService.findAll(user.organizationId);
   }
 
-  @Get(':id')
-  findOne(@CurrentUser() user: AuthUserContext, @Param('id') id: string) {
+  @Get(":id")
+  findOne(
+    @CurrentUser() user: AuthUserContext,
+    @Param("id", new ParseUUIDPipe()) id: string,
+  ) {
     return this.campaignService.findOne(user.organizationId, id);
   }
 
-  @Patch(':id/status')
+  @Patch(":id/status")
   updateStatus(
     @CurrentUser() user: AuthUserContext,
-    @Param('id') id: string,
-    @Body('status') status: CampaignStatus,
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() input: UpdateCampaignStatusDto,
   ) {
-    return this.campaignService.updateStatus(user.organizationId, id, status);
+    return this.campaignService.updateStatus(
+      user.organizationId,
+      id,
+      input.status,
+    );
   }
 }
