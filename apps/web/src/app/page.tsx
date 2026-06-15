@@ -19,7 +19,7 @@ export default function LandingGate() {
 
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-300">
-            <Sparkles className="h-3 w-3 animate-spin" /> NextJS 15 + NestJS Outbound Stack Ready
+            <Sparkles className="h-3 w-3 animate-spin" /> Welcome to LeadFlow AI
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white">
             LeadFlow <span className="text-indigo-400">AI</span>
