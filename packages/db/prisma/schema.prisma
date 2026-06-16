@@ -1,11 +1,10 @@
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
+
+datasource db {
+  provider  = "postgresql"
+} 
 
 enum UserRole {
   OWNER
@@ -16,7 +15,7 @@ enum UserRole {
 enum LeadSource {
   APOLLO
   LINKEDIN
-  CRUNCHBASE
+  CRUNCHBASE  
   WEBSITE
   MANUAL
   IMPORT
