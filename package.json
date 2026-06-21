@@ -1,26 +1,29 @@
 {
-  "name": "leadflow-ai",
+  "name": "LeadGen",
   "version": "1.0.0",
-  "packageManager": "npm@10.9.2",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "turbo run dev --parallel",
-    "build": "npm run build --workspaces --if-present",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "db:generate": "npm run --workspace=packages/db generate",
-    "db:migrate": "npm run --workspace=packages/db migrate:dev"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.8.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
   "devDependencies": {
-    "turbo": "^2.0.4",
-    "typescript": "^5.4.5"
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "turbo": "^2.9.18",
+    "typescript": "^6.0.3"
   },
-  "dependencies": {
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.4"
-  }
+  "packageManager": "pnpm@11.8.0"
 }

@@ -1,55 +1,8 @@
-# dependencies
 node_modules/
-.pnp
-.pnp.js
-
-# builds
+.env
+.turbo/
 dist/
 .next/
-out/
-build/
-
-# environment
-.env
-.env.local
-.env.*.local
-.env.example
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Prisma
-# packages/db/prisma/migrations/
-
-# Turbo
-.turbo/
-
-# TypeScript
 *.tsbuildinfo
-
-# Coverage
 coverage/
-
-# Logs
-logs/
-*.log
-
-# NestJS
-apps/api/dist/
-
-# Next.js
-apps/web/.next/
-
-# Local databases
-*.db
-
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.prisma/
