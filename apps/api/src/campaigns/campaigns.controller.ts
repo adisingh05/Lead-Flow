@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { UpdateCampaignDto } from './dto/update-campaign.dto';
 
 @ApiTags('campaigns')
 @Controller('campaigns')
@@ -27,16 +29,13 @@ export class CampaignsController {
   }
 
   @Post()
-  create(@Body() body: { name: string; organizationId: string }) {
-    return this.campaignsService.create(body);
+  create(@Body() dto: CreateCampaignDto) {
+    return this.campaignsService.create(dto);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() body: { name?: string; status?: string },
-  ) {
-    return this.campaignsService.update(id, body);
+  update(@Param('id') id: string, @Body() dto: UpdateCampaignDto) {
+    return this.campaignsService.update(id, dto);
   }
 
   @Delete(':id')

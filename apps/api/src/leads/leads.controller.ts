@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateLeadDto } from './dto/create-lead.dto';
+import { UpdateLeadDto } from './dto/update-lead.dto';
 
 @ApiTags('leads')
 @Controller('leads')
@@ -27,16 +29,13 @@ export class LeadsController {
   }
 
   @Post()
-  create(@Body() body: { organizationId: string }) {
-    return this.leadsService.create(body);
+  create(@Body() dto: CreateLeadDto) {
+    return this.leadsService.create(dto);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() body: { status?: string; score?: number },
-  ) {
-    return this.leadsService.update(id, body);
+  update(@Param('id') id: string, @Body() dto: UpdateLeadDto) {
+    return this.leadsService.update(id, dto);
   }
 
   @Delete(':id')

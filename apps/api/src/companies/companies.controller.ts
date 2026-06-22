@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @ApiTags('companies')
 @Controller('companies')
@@ -27,13 +29,13 @@ export class CompaniesController {
   }
 
   @Post()
-  create(@Body() body: { name: string; organizationId: string }) {
-    return this.companiesService.create(body);
+  create(@Body() dto: CreateCompanyDto) {
+    return this.companiesService.create(dto);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() body: { name?: string }) {
-    return this.companiesService.update(id, body);
+  update(@Param('id') id: string, @Body() dto: UpdateCompanyDto) {
+    return this.companiesService.update(id, dto);
   }
 
   @Delete(':id')

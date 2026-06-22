@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
 
 @ApiTags('contacts')
 @Controller('contacts')
@@ -27,23 +29,13 @@ export class ContactsController {
   }
 
   @Post()
-  create(
-    @Body()
-    body: {
-      firstName: string;
-      lastName: string;
-      organizationId: string;
-    },
-  ) {
-    return this.contactsService.create(body);
+  create(@Body() dto: CreateContactDto) {
+    return this.contactsService.create(dto);
   }
 
   @Put(':id')
-  update(
-    @Param('id') id: string,
-    @Body() body: { firstName?: string; lastName?: string; email?: string },
-  ) {
-    return this.contactsService.update(id, body);
+  update(@Param('id') id: string, @Body() dto: UpdateContactDto) {
+    return this.contactsService.update(id, dto);
   }
 
   @Delete(':id')
