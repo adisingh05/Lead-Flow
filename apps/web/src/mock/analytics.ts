@@ -1,0 +1,58 @@
+import { AnalyticsDataPoint } from "@/types";
+
+export const mockAnalytics: AnalyticsDataPoint[] = [
+  {
+    month: "Jan",
+    leads: 120,
+    contacted: 98,
+    converted: 18,
+    openRate: 42,
+    replyRate: 18,
+    meetings: 6,
+  },
+  {
+    month: "Feb",
+    leads: 145,
+    contacted: 120,
+    converted: 24,
+    openRate: 45,
+    replyRate: 21,
+    meetings: 9,
+  },
+  {
+    month: "Mar",
+    leads: 168,
+    contacted: 140,
+    converted: 31,
+    openRate: 48,
+    replyRate: 24,
+    meetings: 12,
+  },
+  {
+    month: "Apr",
+    leads: 192,
+    contacted: 158,
+    converted: 38,
+    openRate: 51,
+    replyRate: 26,
+    meetings: 14,
+  },
+  {
+    month: "May",
+    leads: 224,
+    contacted: 185,
+    converted: 45,
+    openRate: 54,
+    replyRate: 28,
+    meetings: 17,
+  },
+  {
+    month: "Jun",
+    leads: 267,
+    contacted: 218,
+    converted: 54,
+    openRate: 58,
+    replyRate: 31,
+    meetings: 21,
+  },
+];
