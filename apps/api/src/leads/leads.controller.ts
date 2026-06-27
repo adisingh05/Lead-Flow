@@ -7,13 +7,16 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
+import { ClerkAuthGuard } from '../auth/auth.guard';
 
 @ApiTags('leads')
+@UseGuards(ClerkAuthGuard)
 @Controller('leads')
 export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}

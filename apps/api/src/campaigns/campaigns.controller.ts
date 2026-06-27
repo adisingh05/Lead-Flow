@@ -7,13 +7,16 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CampaignsService } from './campaigns.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { ClerkAuthGuard } from '../auth/auth.guard';
 
 @ApiTags('campaigns')
+@UseGuards(ClerkAuthGuard)
 @Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
