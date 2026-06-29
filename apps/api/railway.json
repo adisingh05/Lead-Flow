@@ -2,10 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "pnpm install --no-frozen-lockfile && pnpm run build"
+    "buildCommand": "cd apps/api && pnpm install --no-frozen-lockfile && ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma && pnpm run build"
   },
   "deploy": {
-    "startCommand": "node dist/main.js",
+    "startCommand": "node apps/api/dist/main.js",
     "restartPolicyType": "ON_FAILURE"
   }
 }
