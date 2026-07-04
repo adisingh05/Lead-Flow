@@ -42,7 +42,7 @@ export default function Sidebar() {
     <aside
       className={cn(
         "hidden md:flex flex-col h-screen sticky top-0 border-r border-[#E5E7EB] bg-white transition-all duration-200 shrink-0",
-        sidebarCollapsed ? "w-[60px]" : "w-[220px]",
+        sidebarCollapsed ? "w-15" : "w-55",
       )}
     >
       {/* Logo */}

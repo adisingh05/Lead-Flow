@@ -113,10 +113,7 @@ export default function LeadsPage() {
           {stages.map((stage) => {
             const stageLeads = filtered.filter((l) => l.status === stage.key);
             return (
-              <div
-                key={stage.key}
-                className="flex flex-col gap-2 min-w-[200px]"
-              >
+              <div key={stage.key} className="flex flex-col gap-2 min-w-50">
                 {/* Stage header */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
