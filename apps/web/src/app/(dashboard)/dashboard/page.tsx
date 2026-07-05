@@ -10,10 +10,33 @@ import {
 import StatCard from "@/components/ui/statCard";
 import { mockLeads } from "@/mock/leads";
 import { mockCampaigns } from "@/mock/campaigns";
+import { mockContacts } from "@/mock/contacts";
+import { mockCompanies } from "@/mock/companies";
+import { Lead } from "@/types";
+
+const leadStatusStyles: Record<Lead["status"], string> = {
+  NEW: "bg-gray-100 text-gray-600",
+  CONTACTED: "bg-purple-50 text-purple-700",
+  QUALIFIED: "bg-blue-50 text-blue-700",
+  UNQUALIFIED: "bg-amber-50 text-amber-700",
+  CONVERTED: "bg-emerald-50 text-emerald-700",
+  LOST: "bg-red-50 text-red-600",
+};
+
+const enrichedLeads: Lead[] = mockLeads.map((lead) => ({
+  ...lead,
+  contact: mockContacts.find((c) => c.id === lead.contactId),
+  company: mockCompanies.find((c) => c.id === lead.companyId),
+}));
+
+function leadName(lead: Lead) {
+  if (!lead.contact) return "Unknown";
+  return `${lead.contact.firstName} ${lead.contact.lastName}`;
+}
 
 export default function DashboardPage() {
-  const recentLeads = mockLeads.slice(0, 5);
-  const activeCampaigns = mockCampaigns.filter((c) => c.status === "active");
+  const recentLeads = enrichedLeads.slice(0, 5);
+  const activeCampaigns = mockCampaigns.filter((c) => c.status === "ACTIVE");
 
   return (
     <div className="flex flex-col gap-6">
@@ -91,12 +114,13 @@ export default function DashboardPage() {
             <h2 className="text-[14px] font-semibold text-[#0F0F0F]">
               Recent Leads
             </h2>
-            <a
-              href="/leads"
-              className="text-[12px] text-[#2563EB] hover:underline font-medium"
-            >
-              View all
-            </a>
+            
+              <a
+                href="/leads"
+                className="text-[12px] text-[#2563EB] hover:underline font-medium"
+              >
+                View all
+              </a>
           </div>
           <div className="flex flex-col gap-2">
             {recentLeads.map((lead) => (
@@ -107,14 +131,16 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-full bg-[#F0F4FF] flex items-center justify-center">
                     <span className="text-[11px] font-bold text-[#2563EB]">
-                      {lead.contactName.charAt(0)}
+                      {leadName(lead).charAt(0)}
                     </span>
                   </div>
                   <div>
                     <p className="text-[13px] font-medium text-[#0F0F0F]">
-                      {lead.contactName}
+                      {leadName(lead)}
                     </p>
-                    <p className="text-[11px] text-[#9CA3AF]">{lead.company}</p>
+                    <p className="text-[11px] text-[#9CA3AF]">
+                      {lead.company?.name ?? "—"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -122,17 +148,9 @@ export default function DashboardPage() {
                     {lead.score}
                   </span>
                   <span
-                    className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize
-                    ${lead.status === "won" ? "bg-emerald-50 text-emerald-700" : ""}
-                    ${lead.status === "lost" ? "bg-red-50 text-red-600" : ""}
-                    ${lead.status === "qualified" ? "bg-blue-50 text-blue-700" : ""}
-                    ${lead.status === "new" ? "bg-gray-100 text-gray-600" : ""}
-                    ${lead.status === "contacted" ? "bg-purple-50 text-purple-700" : ""}
-                    ${lead.status === "meeting" ? "bg-amber-50 text-amber-700" : ""}
-                    ${lead.status === "responded" ? "bg-teal-50 text-teal-700" : ""}
-                  `}
+                    className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${leadStatusStyles[lead.status]}`}
                   >
-                    {lead.status}
+                    {lead.status.toLowerCase()}
                   </span>
                 </div>
               </div>
@@ -146,12 +164,13 @@ export default function DashboardPage() {
             <h2 className="text-[14px] font-semibold text-[#0F0F0F]">
               Active Campaigns
             </h2>
-            <a
-              href="/campaigns"
-              className="text-[12px] text-[#2563EB] hover:underline font-medium"
-            >
-              View all
-            </a>
+            
+              <a
+                href="/campaigns"
+                className="text-[12px] text-[#2563EB] hover:underline font-medium"
+              >
+                View all
+              </a>
           </div>
           <div className="flex flex-col gap-3">
             {activeCampaigns.map((campaign) => {
@@ -177,7 +196,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-[11px] text-[#6B7280]">
-                    <span>{campaign.leads} leads</span>
+                    <span>{campaign.leadsCount} leads</span>
                     <span>{openRate}% open</span>
                     <span>{replyRate}% reply</span>
                     <span>{campaign.meetings} meetings</span>

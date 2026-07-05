@@ -35,13 +35,12 @@ export interface Contact {
 export interface Lead {
   id: string;
   status:
-    | "new"
-    | "qualified"
-    | "contacted"
-    | "responded"
-    | "meeting"
-    | "won"
-    | "lost";
+    | "NEW"
+    | "CONTACTED"
+    | "QUALIFIED"
+    | "UNQUALIFIED"
+    | "CONVERTED"
+    | "LOST";
   score: number;
   source?: string;
   notes?: string;
@@ -60,12 +59,17 @@ export interface Campaign {
   id: string;
   name: string;
   description?: string;
-  status: "draft" | "active" | "paused" | "completed" | "archived";
+  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
   startDate?: string;
   endDate?: string;
   organizationId: string;
   createdAt?: string;
   updatedAt?: string;
+  leadsCount: number;
+  sent: number;
+  opened: number;
+  replied: number;
+  meetings: number;
 }
 
 export interface Organization {

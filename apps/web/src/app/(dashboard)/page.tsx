@@ -14,7 +14,7 @@ import { mockContacts } from "@/mock/contacts";
 
 export default function DashboardPage() {
   const recentLeads = mockLeads.slice(0, 5);
-  const activeCampaigns = mockCampaigns.filter((c) => c.status === "active");
+  const activeCampaigns = mockCampaigns.filter((c) => c.status === "ACTIVE");
 
   return (
     <div className="flex flex-col gap-6">

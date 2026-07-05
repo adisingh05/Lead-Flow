@@ -6,11 +6,17 @@ export class ContactsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(organizationId: string) {
-    return this.prisma.contact.findMany({ where: { organizationId } });
+    return this.prisma.contact.findMany({
+      where: { organizationId },
+      include: { company: true },
+    });
   }
 
   async findOne(id: string) {
-    return this.prisma.contact.findUnique({ where: { id } });
+    return this.prisma.contact.findUnique({
+      where: { id },
+      include: { company: true },
+    });
   }
 
   async create(data: {

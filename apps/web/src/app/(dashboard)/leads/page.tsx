@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus, Target } from "lucide-react";
-import { mockLeads } from "@/mock/leads";
+import { Search, Plus } from "lucide-react";
+import { useOrganizationStore } from "@/store/organization";
+import { useLeads } from "@/hooks/useLeads";
 import { Lead } from "@/types";
 
 const stages: {
@@ -11,57 +12,66 @@ const stages: {
   color: string;
   bg: string;
 }[] = [
-  { key: "new", label: "New", color: "text-gray-600", bg: "bg-gray-100" },
+  { key: "NEW", label: "New", color: "text-gray-600", bg: "bg-gray-100" },
   {
-    key: "qualified",
-    label: "Qualified",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-  },
-  {
-    key: "contacted",
+    key: "CONTACTED",
     label: "Contacted",
     color: "text-violet-700",
     bg: "bg-violet-50",
   },
   {
-    key: "responded",
-    label: "Responded",
-    color: "text-teal-700",
-    bg: "bg-teal-50",
+    key: "QUALIFIED",
+    label: "Qualified",
+    color: "text-blue-700",
+    bg: "bg-blue-50",
   },
   {
-    key: "meeting",
-    label: "Meeting",
+    key: "UNQUALIFIED",
+    label: "Unqualified",
     color: "text-amber-700",
     bg: "bg-amber-50",
   },
-  { key: "won", label: "Won", color: "text-emerald-700", bg: "bg-emerald-50" },
-  { key: "lost", label: "Lost", color: "text-red-600", bg: "bg-red-50" },
+  {
+    key: "CONVERTED",
+    label: "Converted",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50",
+  },
+  { key: "LOST", label: "Lost", color: "text-red-600", bg: "bg-red-50" },
 ];
 
 type ViewMode = "pipeline" | "table";
 
+function contactName(lead: Lead) {
+  if (!lead.contact) return "Unknown";
+  return `${lead.contact.firstName} ${lead.contact.lastName}`;
+}
+
 export default function LeadsPage() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<ViewMode>("pipeline");
+  const { organizationId } = useOrganizationStore();
 
-  const filtered = mockLeads.filter(
-    (l) =>
-      l.contactName.toLowerCase().includes(search.toLowerCase()) ||
-      l.company.toLowerCase().includes(search.toLowerCase()),
-  );
+  const { data: leads, isLoading, isError } = useLeads(organizationId ?? "");
+  const list = leads ?? [];
+
+  const filtered = list.filter((l) => {
+    const term = search.toLowerCase();
+    return (
+      contactName(l).toLowerCase().includes(term) ||
+      l.company?.name.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[22px] font-bold text-[#0F0F0F] tracking-tight">
             Leads
           </h1>
           <p className="text-[13px] text-[#6B7280] mt-0.5">
-            {mockLeads.length} leads in your pipeline
+            {isLoading ? "Loading..." : `${list.length} leads in your pipeline`}
           </p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors">
@@ -70,7 +80,6 @@ export default function LeadsPage() {
         </button>
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 bg-white border border-[#E5E7EB] rounded-lg px-3 py-2 flex-1 max-w-sm">
           <Search className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0" />
@@ -82,7 +91,6 @@ export default function LeadsPage() {
             className="bg-transparent text-[13px] text-[#0F0F0F] placeholder:text-[#9CA3AF] outline-none w-full"
           />
         </div>
-        {/* View toggle */}
         <div className="flex items-center bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
           <button
             onClick={() => setView("pipeline")}
@@ -107,14 +115,24 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Pipeline View */}
-      {view === "pipeline" && (
+      {isError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-[13px] text-red-700">
+          Couldn't load leads from the server.
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="bg-white border border-[#E5E7EB] rounded-xl p-12 flex items-center justify-center">
+          <p className="text-[13px] text-[#9CA3AF]">Loading leads...</p>
+        </div>
+      )}
+
+      {!isLoading && view === "pipeline" && (
         <div className="flex gap-3 overflow-x-auto pb-4">
           {stages.map((stage) => {
             const stageLeads = filtered.filter((l) => l.status === stage.key);
             return (
               <div key={stage.key} className="flex flex-col gap-2 min-w-50">
-                {/* Stage header */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
                     <span
@@ -129,7 +147,6 @@ export default function LeadsPage() {
                     </span>
                   </div>
                 </div>
-                {/* Lead cards */}
                 <div className="flex flex-col gap-2">
                   {stageLeads.length === 0 ? (
                     <div className="bg-white border border-dashed border-[#E5E7EB] rounded-lg p-4 text-center">
@@ -145,11 +162,11 @@ export default function LeadsPage() {
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-[#F0F4FF] flex items-center justify-center shrink-0">
                               <span className="text-[10px] font-bold text-[#2563EB]">
-                                {lead.contactName.charAt(0)}
+                                {contactName(lead).charAt(0)}
                               </span>
                             </div>
                             <span className="text-[12px] font-semibold text-[#0F0F0F] truncate">
-                              {lead.contactName}
+                              {contactName(lead)}
                             </span>
                           </div>
                           <span className="text-[11px] font-bold text-[#2563EB] bg-[#F0F4FF] px-1.5 py-0.5 rounded-full shrink-0">
@@ -157,10 +174,10 @@ export default function LeadsPage() {
                           </span>
                         </div>
                         <p className="text-[11px] text-[#6B7280]">
-                          {lead.company}
+                          {lead.company?.name ?? "—"}
                         </p>
                         <p className="text-[11px] text-[#9CA3AF]">
-                          {lead.title}
+                          {lead.contact?.title ?? "—"}
                         </p>
                         {lead.value && (
                           <p className="text-[12px] font-semibold text-[#0F0F0F]">
@@ -169,7 +186,7 @@ export default function LeadsPage() {
                         )}
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] text-[#9CA3AF]">
-                            {lead.source}
+                            {lead.source ?? "—"}
                           </span>
                         </div>
                       </div>
@@ -182,8 +199,7 @@ export default function LeadsPage() {
         </div>
       )}
 
-      {/* Table View */}
-      {view === "table" && (
+      {!isLoading && view === "table" && (
         <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden">
           <table className="w-full">
             <thead>
@@ -220,27 +236,27 @@ export default function LeadsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-full bg-[#F0F4FF] flex items-center justify-center shrink-0">
                           <span className="text-[11px] font-bold text-[#2563EB]">
-                            {lead.contactName.charAt(0)}
+                            {contactName(lead).charAt(0)}
                           </span>
                         </div>
                         <div>
                           <p className="text-[13px] font-semibold text-[#0F0F0F]">
-                            {lead.contactName}
+                            {contactName(lead)}
                           </p>
                           <p className="text-[11px] text-[#9CA3AF]">
-                            {lead.title}
+                            {lead.contact?.title ?? "—"}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-[13px] text-[#6B7280]">
-                      {lead.company}
+                      {lead.company?.name ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">
                       <span
                         className={`text-[11px] font-semibold px-2.5 py-1 rounded-full capitalize ${stage?.bg} ${stage?.color}`}
                       >
-                        {lead.status}
+                        {lead.status.toLowerCase()}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
@@ -252,7 +268,7 @@ export default function LeadsPage() {
                       {lead.value ? `₹${lead.value.toLocaleString()}` : "—"}
                     </td>
                     <td className="px-5 py-3.5 text-[13px] text-[#6B7280]">
-                      {lead.source}
+                      {lead.source ?? "—"}
                     </td>
                   </tr>
                 );

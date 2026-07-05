@@ -4,7 +4,7 @@ export const mockLeads: Lead[] = [
   {
     id: "1",
     contactId: "1",
-    status: "qualified",
+    status: "QUALIFIED",
     score: 92,
     value: 120000,
     source: "LinkedIn",
@@ -15,7 +15,7 @@ export const mockLeads: Lead[] = [
   {
     id: "2",
     contactId: "2",
-    status: "contacted",
+    status: "CONTACTED",
     score: 87,
     value: 85000,
     source: "Cold Email",
@@ -26,7 +26,7 @@ export const mockLeads: Lead[] = [
   {
     id: "3",
     contactId: "3",
-    status: "new",
+    status: "NEW",
     score: 79,
     value: 60000,
     source: "Referral",
@@ -37,7 +37,7 @@ export const mockLeads: Lead[] = [
   {
     id: "4",
     contactId: "4",
-    status: "meeting",
+    status: "QUALIFIED",
     score: 95,
     value: 200000,
     source: "Inbound",
@@ -48,7 +48,7 @@ export const mockLeads: Lead[] = [
   {
     id: "5",
     contactId: "5",
-    status: "responded",
+    status: "CONTACTED",
     score: 71,
     value: 45000,
     source: "LinkedIn",
@@ -59,7 +59,7 @@ export const mockLeads: Lead[] = [
   {
     id: "6",
     contactId: "6",
-    status: "won",
+    status: "CONVERTED",
     score: 98,
     value: 350000,
     source: "Referral",
@@ -70,7 +70,7 @@ export const mockLeads: Lead[] = [
   {
     id: "7",
     contactId: "7",
-    status: "lost",
+    status: "LOST",
     score: 55,
     value: 75000,
     source: "Cold Email",
@@ -81,7 +81,7 @@ export const mockLeads: Lead[] = [
   {
     id: "8",
     contactId: "8",
-    status: "new",
+    status: "NEW",
     score: 68,
     value: 95000,
     source: "LinkedIn",
