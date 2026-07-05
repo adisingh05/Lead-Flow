@@ -6,5 +6,6 @@ export async function getCampaigns(
 ): Promise<Campaign[]> {
   return apiClient<Campaign[]>(
     `/api/campaigns?organizationId=${organizationId}`,
+    "GET",
   );
 }

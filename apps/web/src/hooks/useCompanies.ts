@@ -1,10 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCompanies } from "@/services/companies";
+import { useAuth } from "@clerk/nextjs";
+import { apiClient } from "@/lib/api";
+import { Company } from "@/types";
 
 export function useCompanies(organizationId: string) {
-  return useQuery({
+  const { getToken } = useAuth();
+
+  return useQuery<Company[]>({
     queryKey: ["companies", organizationId],
-    queryFn: () => getCompanies(organizationId),
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<Company[]>(
+        `/api/companies?organizationId=${organizationId}`,
+        token,
+      );
+    },
     enabled: !!organizationId,
   });
 }

@@ -1,17 +1,14 @@
 import { apiClient } from "@/lib/api";
-import { Company } from "@/types";
 
-export async function getCompanies(organizationId: string): Promise<Company[]> {
-  return apiClient<Company[]>(
-    `/api/companies?organizationId=${organizationId}`,
-  );
+export async function getCompanies(organizationId: string, token: string) {
+  return apiClient(`/api/companies?organizationId=${organizationId}`, token);
 }
 
-export async function createCompany(data: {
-  name: string;
-  organizationId: string;
-}): Promise<Company> {
-  return apiClient<Company>("/api/companies", {
+export async function createCompany(
+  token: string,
+  data: { name: string; organizationId: string },
+) {
+  return apiClient("/api/companies", token, {
     method: "POST",
     body: JSON.stringify(data),
   });

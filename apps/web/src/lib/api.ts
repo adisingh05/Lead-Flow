@@ -1,14 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export async function apiClient<T>(
   endpoint: string,
+  token: string,
   options?: RequestInit,
 ): Promise<T> {
-  const { getToken } = await auth();
-  const token = await getToken();
-
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
@@ -19,7 +15,7 @@ export async function apiClient<T>(
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response.json().catch(() => ({}));
     throw new Error(error.message || "API request failed");
   }
 
