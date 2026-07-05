@@ -1,33 +1,39 @@
 export interface Company {
   id: string;
   name: string;
-  industry: string;
-  employees: number;
-  location: string;
-  website: string;
-  status: "active" | "inactive" | "prospect";
-  logo?: string;
+  domain?: string;
+  website?: string;
+  industry?: string;
+  size?: "MICRO" | "SMALL" | "MEDIUM" | "LARGE" | "ENTERPRISE";
+  revenue?: number;
+  country?: string;
+  city?: string;
+  description?: string;
+  linkedin?: string;
+  organizationId: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Contact {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone?: string;
-  title: string;
-  company: string;
-  companyId: string;
+  title?: string;
   linkedin?: string;
-  status: "active" | "inactive" | "bounced";
+  twitter?: string;
+  avatar?: string;
+  organizationId: string;
+  companyId?: string;
+  company?: Company;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Lead {
   id: string;
-  contactId: string;
-  contactName: string;
-  company: string;
-  title: string;
   status:
     | "new"
     | "qualified"
@@ -37,22 +43,39 @@ export interface Lead {
     | "won"
     | "lost";
   score: number;
+  source?: string;
+  notes?: string;
   value?: number;
-  source: string;
-  createdAt: string;
+  organizationId: string;
+  companyId?: string;
+  contactId?: string;
+  campaignId?: string;
+  company?: Company;
+  contact?: Contact;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Campaign {
   id: string;
   name: string;
-  status: "draft" | "active" | "paused" | "completed";
-  leads: number;
-  sent: number;
-  opened: number;
-  replied: number;
-  meetings: number;
-  startDate: string;
+  description?: string;
+  status: "draft" | "active" | "paused" | "completed" | "archived";
+  startDate?: string;
   endDate?: string;
+  organizationId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string;
+  website?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AnalyticsDataPoint {
