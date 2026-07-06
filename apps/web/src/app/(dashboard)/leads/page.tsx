@@ -4,7 +4,17 @@ import { useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { useOrganizationStore } from "@/store/organization";
 import { useLeads } from "@/hooks/useLeads";
-import { Lead } from "@/types";
+import { useCreateActivity } from "@/hooks/useActivities";
+import { Lead, ActivityType } from "@/types";
+
+const activityOptions: { value: ActivityType; label: string }[] = [
+  { value: "EMAIL_SENT", label: "Email sent" },
+  { value: "EMAIL_OPENED", label: "Email opened" },
+  { value: "EMAIL_REPLIED", label: "Email replied" },
+  { value: "CALL_MADE", label: "Call made" },
+  { value: "MEETING_SCHEDULED", label: "Meeting scheduled" },
+  { value: "MEETING_COMPLETED", label: "Meeting completed" },
+];
 
 const stages: {
   key: Lead["status"];
@@ -53,6 +63,7 @@ export default function LeadsPage() {
   const { organizationId } = useOrganizationStore();
 
   const { data: leads, isLoading, isError } = useLeads(organizationId ?? "");
+  const createActivity = useCreateActivity();
   const list = leads ?? [];
 
   const filtered = list.filter((l) => {
@@ -222,6 +233,9 @@ export default function LeadsPage() {
                 <th className="text-left text-[11px] font-semibold text-[#6B7280] uppercase tracking-wide px-5 py-3">
                   Source
                 </th>
+                <th className="text-left text-[11px] font-semibold text-[#6B7280] uppercase tracking-wide px-5 py-3">
+                  Log Activity
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -269,6 +283,32 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-5 py-3.5 text-[13px] text-[#6B7280]">
                       {lead.source ?? "—"}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <select
+                        defaultValue=""
+                        disabled={createActivity.isPending}
+                        onChange={(e) => {
+                          const type = e.target.value as ActivityType;
+                          if (!type) return;
+                          createActivity.mutate({
+                            type,
+                            leadId: lead.id,
+                            contactId: lead.contactId,
+                          });
+                          e.target.value = "";
+                        }}
+                        className="bg-white border border-[#E5E7EB] rounded-md px-2 py-1.5 text-[12px] text-[#6B7280] outline-none cursor-pointer disabled:opacity-50"
+                      >
+                        <option value="" disabled>
+                          Log activity...
+                        </option>
+                        {activityOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                   </tr>
                 );

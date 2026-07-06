@@ -72,6 +72,30 @@ export interface Campaign {
   meetings: number;
 }
 
+export type ActivityType =
+  | "EMAIL_SENT"
+  | "EMAIL_OPENED"
+  | "EMAIL_CLICKED"
+  | "EMAIL_REPLIED"
+  | "CALL_MADE"
+  | "CALL_ANSWERED"
+  | "MEETING_SCHEDULED"
+  | "MEETING_COMPLETED"
+  | "NOTE_ADDED"
+  | "TASK_CREATED"
+  | "TASK_COMPLETED"
+  | "LINKEDIN_MESSAGE";
+
+export interface Activity {
+  id: string;
+  type: ActivityType;
+  metadata?: Record<string, unknown>;
+  userId?: string;
+  contactId?: string;
+  leadId?: string;
+  createdAt?: string;
+}
+
 export interface Organization {
   id: string;
   name: string;
