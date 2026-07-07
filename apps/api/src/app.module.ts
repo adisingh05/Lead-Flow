@@ -10,6 +10,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { LeadsModule } from './leads/leads.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ActivitiesModule } from './activities/activities.module';
     LeadsModule,
     CampaignsModule,
     ActivitiesModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
