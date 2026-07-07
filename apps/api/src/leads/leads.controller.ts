@@ -32,8 +32,8 @@ export class LeadsController {
   }
 
   @Post()
-  create(@Body() dto: CreateLeadDto) {
-    return this.leadsService.create(dto);
+  create(@Body() dto: CreateLeadDto, @Query('organizationId') organizationId: string) {
+    return this.leadsService.create({ ...dto, organizationId });
   }
 
   @Put(':id')

@@ -5,7 +5,7 @@ export class CreateLeadDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  organizationId: string;
+  organizationId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -16,6 +16,11 @@ export class CreateLeadDto {
   @IsOptional()
   @IsString()
   contactId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  campaignId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

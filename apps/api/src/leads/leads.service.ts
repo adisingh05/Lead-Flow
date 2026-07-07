@@ -19,7 +19,14 @@ export class LeadsService {
     });
   }
 
-  async create(data: { organizationId: string }) {
+  async create(data: {
+    organizationId: string;
+    companyId?: string;
+    contactId?: string;
+    campaignId?: string;
+    source?: string;
+    value?: number;
+  }) {
     return this.prisma.lead.create({ data });
   }
 
