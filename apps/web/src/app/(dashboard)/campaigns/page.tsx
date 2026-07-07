@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Search, Plus, Megaphone } from "lucide-react";
 import { useOrganizationStore } from "@/store/organization";
-import { useCampaigns } from "@/hooks/useCampaigns";
+import { useCampaigns, useCreateCampaign } from "@/hooks/useCampaigns";
+import Modal from "@/components/ui/Modal";
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-emerald-50 text-emerald-700",
@@ -22,8 +23,84 @@ function formatDate(value?: string) {
   });
 }
 
+function AddCampaignForm({
+  organizationId,
+  onDone,
+}: {
+  organizationId: string;
+  onDone: () => void;
+}) {
+  const createCampaign = useCreateCampaign();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createCampaign.mutate(
+      {
+        name: name.trim(),
+        organizationId,
+        description: description.trim() || undefined,
+      },
+      { onSuccess: onDone },
+    );
+  };
+
+  const inputClass =
+    "w-full bg-white border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#0F0F0F] placeholder:text-[#9CA3AF] outline-none focus:border-[#2563EB]";
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Campaign name *
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Q3 Fintech Outreach"
+          required
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Description
+        </label>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="What's this campaign targeting?"
+          rows={3}
+          className={inputClass}
+        />
+      </div>
+      <p className="text-[11px] text-[#9CA3AF]">
+        New campaigns start in Draft status. Assign leads to this campaign from
+        the Leads page to start tracking engagement.
+      </p>
+
+      {createCampaign.isError && (
+        <p className="text-[12px] text-red-600">
+          Couldn't create the campaign. Try again.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={createCampaign.isPending || !name.trim()}
+        className="mt-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg py-2.5 hover:bg-[#222] transition-colors disabled:opacity-50"
+      >
+        {createCampaign.isPending ? "Creating..." : "Create Campaign"}
+      </button>
+    </form>
+  );
+}
+
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const { organizationId } = useOrganizationStore();
 
   const {
@@ -48,7 +125,10 @@ export default function CampaignsPage() {
             {isLoading ? "Loading..." : `${list.length} campaigns total`}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors"
+        >
           <Plus className="w-4 h-4" />
           New Campaign
         </button>
@@ -199,6 +279,17 @@ export default function CampaignsPage() {
           )}
         </div>
       )}
+
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="New Campaign"
+      >
+        <AddCampaignForm
+          organizationId={organizationId ?? ""}
+          onDone={() => setShowAddModal(false)}
+        />
+      </Modal>
     </div>
   );
 }

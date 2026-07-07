@@ -3,15 +3,151 @@
 import { useState } from "react";
 import { Search, Plus, Users, ExternalLink } from "lucide-react";
 import { useOrganizationStore } from "@/store/organization";
-import { useContacts } from "@/hooks/useContacts";
+import { useContacts, useCreateContact } from "@/hooks/useContacts";
+import { useCompanies } from "@/hooks/useCompanies";
+import Modal from "@/components/ui/Modal";
 
 const avatarColors = [
   "bg-violet-500", "bg-blue-500", "bg-emerald-500",
   "bg-amber-500", "bg-pink-500", "bg-teal-500",
 ];
 
+function AddContactForm({
+  organizationId,
+  onDone,
+}: {
+  organizationId: string;
+  onDone: () => void;
+}) {
+  const createContact = useCreateContact();
+  const { data: companies } = useCompanies(organizationId);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [title, setTitle] = useState("");
+  const [companyId, setCompanyId] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) return;
+    createContact.mutate(
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        organizationId,
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        title: title.trim() || undefined,
+        companyId: companyId || undefined,
+      },
+      { onSuccess: onDone },
+    );
+  };
+
+  const inputClass =
+    "w-full bg-white border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#0F0F0F] placeholder:text-[#9CA3AF] outline-none focus:border-[#2563EB]";
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+            First name *
+          </label>
+          <input
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Jane"
+            required
+            className={inputClass}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+            Last name *
+          </label>
+          <input
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Doe"
+            required
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Company
+        </label>
+        <select
+          value={companyId}
+          onChange={(e) => setCompanyId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">None</option>
+          {(companies ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Title
+        </label>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="VP of Sales"
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Email
+        </label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="jane@acme.com"
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Phone
+        </label>
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="+91 98765 43210"
+          className={inputClass}
+        />
+      </div>
+
+      {createContact.isError && (
+        <p className="text-[12px] text-red-600">
+          Couldn't create the contact. Try again.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={createContact.isPending || !firstName.trim() || !lastName.trim()}
+        className="mt-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg py-2.5 hover:bg-[#222] transition-colors disabled:opacity-50"
+      >
+        {createContact.isPending ? "Creating..." : "Add Contact"}
+      </button>
+    </form>
+  );
+}
+
 export default function ContactsPage() {
   const [search, setSearch] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const { organizationId } = useOrganizationStore();
 
   const { data: contacts, isLoading, isError } = useContacts(organizationId ?? "");
@@ -36,7 +172,10 @@ export default function ContactsPage() {
             {isLoading ? "Loading..." : `${list.length} contacts in your workspace`}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Add Contact
         </button>
@@ -137,6 +276,17 @@ export default function ContactsPage() {
           </div>
         </div>
       )}
+
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Contact"
+      >
+        <AddContactForm
+          organizationId={organizationId ?? ""}
+          onDone={() => setShowAddModal(false)}
+        />
+      </Modal>
     </div>
   );
 }

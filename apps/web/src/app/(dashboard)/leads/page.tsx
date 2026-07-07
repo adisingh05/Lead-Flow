@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { useOrganizationStore } from "@/store/organization";
-import { useLeads } from "@/hooks/useLeads";
+import { useLeads, useCreateLead } from "@/hooks/useLeads";
 import { useCreateActivity } from "@/hooks/useActivities";
+import { useCompanies } from "@/hooks/useCompanies";
+import { useContacts } from "@/hooks/useContacts";
+import { useCampaigns } from "@/hooks/useCampaigns";
 import { Lead, ActivityType } from "@/types";
+import Modal from "@/components/ui/Modal";
 
 const activityOptions: { value: ActivityType; label: string }[] = [
   { value: "EMAIL_SENT", label: "Email sent" },
@@ -15,6 +19,140 @@ const activityOptions: { value: ActivityType; label: string }[] = [
   { value: "MEETING_SCHEDULED", label: "Meeting scheduled" },
   { value: "MEETING_COMPLETED", label: "Meeting completed" },
 ];
+
+function AddLeadForm({
+  organizationId,
+  onDone,
+}: {
+  organizationId: string;
+  onDone: () => void;
+}) {
+  const createLead = useCreateLead();
+  const { data: companies } = useCompanies(organizationId);
+  const { data: contacts } = useContacts(organizationId);
+  const { data: campaigns } = useCampaigns(organizationId);
+
+  const [companyId, setCompanyId] = useState("");
+  const [contactId, setContactId] = useState("");
+  const [campaignId, setCampaignId] = useState("");
+  const [source, setSource] = useState("");
+  const [value, setValue] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createLead.mutate(
+      {
+        organizationId,
+        companyId: companyId || undefined,
+        contactId: contactId || undefined,
+        campaignId: campaignId || undefined,
+        source: source.trim() || undefined,
+        value: value ? Number(value) : undefined,
+      },
+      { onSuccess: onDone },
+    );
+  };
+
+  const inputClass =
+    "w-full bg-white border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#0F0F0F] placeholder:text-[#9CA3AF] outline-none focus:border-[#2563EB]";
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Contact
+        </label>
+        <select
+          value={contactId}
+          onChange={(e) => setContactId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">None</option>
+          {(contacts ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.firstName} {c.lastName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Company
+        </label>
+        <select
+          value={companyId}
+          onChange={(e) => setCompanyId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">None</option>
+          {(companies ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Campaign
+        </label>
+        <select
+          value={campaignId}
+          onChange={(e) => setCampaignId(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">None</option>
+          {(campaigns ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-[11px] text-[#9CA3AF] mt-1">
+          Only leads attached to a campaign count toward its engagement stats.
+        </p>
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Source
+        </label>
+        <input
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="LinkedIn, Referral, Cold Email..."
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Deal value (₹)
+        </label>
+        <input
+          type="number"
+          min="0"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="100000"
+          className={inputClass}
+        />
+      </div>
+
+      {createLead.isError && (
+        <p className="text-[12px] text-red-600">
+          Couldn't create the lead. Try again.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={createLead.isPending}
+        className="mt-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg py-2.5 hover:bg-[#222] transition-colors disabled:opacity-50"
+      >
+        {createLead.isPending ? "Creating..." : "Add Lead"}
+      </button>
+    </form>
+  );
+}
 
 const stages: {
   key: Lead["status"];
@@ -60,6 +198,7 @@ function contactName(lead: Lead) {
 export default function LeadsPage() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<ViewMode>("pipeline");
+  const [showAddModal, setShowAddModal] = useState(false);
   const { organizationId } = useOrganizationStore();
 
   const { data: leads, isLoading, isError } = useLeads(organizationId ?? "");
@@ -85,7 +224,10 @@ export default function LeadsPage() {
             {isLoading ? "Loading..." : `${list.length} leads in your pipeline`}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Add Lead
         </button>
@@ -317,6 +459,17 @@ export default function LeadsPage() {
           </table>
         </div>
       )}
+
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Lead"
+      >
+        <AddLeadForm
+          organizationId={organizationId ?? ""}
+          onDone={() => setShowAddModal(false)}
+        />
+      </Modal>
     </div>
   );
 }

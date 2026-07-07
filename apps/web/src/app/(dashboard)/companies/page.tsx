@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Search, Plus, ExternalLink, Building2 } from "lucide-react";
 import { useOrganizationStore } from "@/store/organization";
-import { useCompanies } from "@/hooks/useCompanies";
+import { useCompanies, useCreateCompany } from "@/hooks/useCompanies";
+import Modal from "@/components/ui/Modal";
 
 const sizeStyles: Record<string, string> = {
   MICRO: "bg-gray-100 text-gray-600",
@@ -13,9 +14,106 @@ const sizeStyles: Record<string, string> = {
   ENTERPRISE: "bg-violet-50 text-violet-700",
 };
 
+function AddCompanyForm({
+  organizationId,
+  onDone,
+}: {
+  organizationId: string;
+  onDone: () => void;
+}) {
+  const createCompany = useCreateCompany();
+  const [name, setName] = useState("");
+  const [domain, setDomain] = useState("");
+  const [website, setWebsite] = useState("");
+  const [industry, setIndustry] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createCompany.mutate(
+      {
+        name: name.trim(),
+        organizationId,
+        domain: domain.trim() || undefined,
+        website: website.trim() || undefined,
+        industry: industry.trim() || undefined,
+      },
+      { onSuccess: onDone },
+    );
+  };
+
+  const inputClass =
+    "w-full bg-white border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] text-[#0F0F0F] placeholder:text-[#9CA3AF] outline-none focus:border-[#2563EB]";
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Company name *
+        </label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Acme Inc."
+          required
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Domain
+        </label>
+        <input
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          placeholder="acme.com"
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Website
+        </label>
+        <input
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+          placeholder="https://acme.com"
+          className={inputClass}
+        />
+      </div>
+      <div>
+        <label className="text-[12px] font-medium text-[#6B7280] mb-1 block">
+          Industry
+        </label>
+        <input
+          value={industry}
+          onChange={(e) => setIndustry(e.target.value)}
+          placeholder="Fintech"
+          className={inputClass}
+        />
+      </div>
+
+      {createCompany.isError && (
+        <p className="text-[12px] text-red-600">
+          Couldn't create the company. Try again.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={createCompany.isPending || !name.trim()}
+        className="mt-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg py-2.5 hover:bg-[#222] transition-colors disabled:opacity-50"
+      >
+        {createCompany.isPending ? "Creating..." : "Add Company"}
+      </button>
+    </form>
+  );
+}
+
 export default function CompaniesPage() {
   const [search, setSearch] = useState("");
   const [sizeFilter, setSizeFilter] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
   const { organizationId } = useOrganizationStore();
 
   const { data: companies, isLoading, isError } = useCompanies(organizationId ?? "");
@@ -43,7 +141,10 @@ export default function CompaniesPage() {
             {isLoading ? "Loading..." : `${list.length} companies in your workspace`}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#0F0F0F] text-white text-[13px] font-semibold rounded-lg hover:bg-[#222] transition-colors"
+        >
           <Plus className="w-4 h-4" />
           Add Company
         </button>
@@ -154,6 +255,17 @@ export default function CompaniesPage() {
           </div>
         </div>
       )}
+
+      <Modal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Add Company"
+      >
+        <AddCompanyForm
+          organizationId={organizationId ?? ""}
+          onDone={() => setShowAddModal(false)}
+        />
+      </Modal>
     </div>
   );
 }
