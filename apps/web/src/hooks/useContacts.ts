@@ -48,3 +48,22 @@ export function useCreateContact() {
     },
   });
 }
+
+export function useDeleteContact() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<void>(`/api/contacts/${id}`, token, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    },
+  });
+}

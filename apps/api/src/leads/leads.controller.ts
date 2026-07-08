@@ -8,6 +8,7 @@ import {
   Body,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -32,8 +33,18 @@ export class LeadsController {
   }
 
   @Post()
-  create(@Body() dto: CreateLeadDto, @Query('organizationId') organizationId: string) {
-    return this.leadsService.create({ ...dto, organizationId });
+  create(@Body() dto: CreateLeadDto) {
+    if (!dto.organizationId) {
+      throw new BadRequestException('organizationId is required');
+    }
+    return this.leadsService.create(dto as {
+      organizationId: string;
+      companyId?: string;
+      contactId?: string;
+      campaignId?: string;
+      source?: string;
+      value?: number;
+    });
   }
 
   @Put(':id')

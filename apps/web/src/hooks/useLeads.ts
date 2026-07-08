@@ -48,3 +48,47 @@ export function useCreateLead() {
     },
   });
 }
+
+export function useUpdateLeadStatus() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: Lead["status"];
+    }) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<Lead>(`/api/leads/${id}`, token, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    },
+  });
+}
+
+export function useDeleteLead() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<void>(`/api/leads/${id}`, token, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+}

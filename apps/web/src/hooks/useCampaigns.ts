@@ -44,3 +44,47 @@ export function useCreateCampaign() {
     },
   });
 }
+
+export function useUpdateCampaignStatus() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: Campaign["status"];
+    }) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<Campaign>(`/api/campaigns/${id}`, token, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+    },
+  });
+}
+
+export function useDeleteCampaign() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<void>(`/api/campaigns/${id}`, token, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["leads"] });
+    },
+  });
+}
