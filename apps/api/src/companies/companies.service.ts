@@ -17,7 +17,10 @@ export class CompaniesService {
     return this.prisma.company.create({ data });
   }
 
-  async update(id: string, data: { name?: string }) {
+  async update(
+    id: string,
+    data: { name?: string; website?: string; industry?: string },
+  ) {
     return this.prisma.company.update({ where: { id }, data });
   }
 

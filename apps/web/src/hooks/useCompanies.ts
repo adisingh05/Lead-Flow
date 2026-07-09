@@ -47,6 +47,25 @@ export function useCreateCompany() {
   });
 }
 
+export function useUpdateCompany() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name, website, industry }: { id: string; name?: string; website?: string; industry?: string }) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return apiClient<Company>(`/api/companies/${id}`, token, {
+        method: "PUT",
+        body: JSON.stringify({ name, website, industry }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+    },
+  });
+}
+
 export function useDeleteCompany() {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();

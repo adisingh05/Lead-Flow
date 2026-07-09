@@ -29,7 +29,14 @@ export class ContactsService {
 
   async update(
     id: string,
-    data: { firstName?: string; lastName?: string; email?: string },
+    data: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      title?: string;
+      companyId?: string;
+    },
   ) {
     return this.prisma.contact.update({ where: { id }, data });
   }
