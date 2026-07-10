@@ -4,13 +4,15 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { verifyToken } from '@clerk/backend';
-import { Request } from 'express';
+import { AuthenticatedRequest } from './auth.types';
+import { ClerkAuthService } from './auth.service';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
+  constructor(private readonly authService: ClerkAuthService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,10 +24,7 @@ export class ClerkAuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
 
     try {
-      const payload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY,
-      });
-      request['user'] = payload;
+      request.auth = await this.authService.authenticate(token);
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');

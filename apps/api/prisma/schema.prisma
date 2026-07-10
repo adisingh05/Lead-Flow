@@ -86,6 +86,7 @@ enum SequenceStepType {
 
 model Organization {
   id        String   @id @default(cuid())
+  clerkId   String?  @unique
   name      String
   slug      String   @unique
   logo      String?
