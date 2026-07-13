@@ -37,14 +37,16 @@ export class LeadsController {
     if (!dto.organizationId) {
       throw new BadRequestException('organizationId is required');
     }
-    return this.leadsService.create(dto as {
-      organizationId: string;
-      companyId?: string;
-      contactId?: string;
-      campaignId?: string;
-      source?: string;
-      value?: number;
-    });
+    return this.leadsService.create(
+      dto as {
+        organizationId: string;
+        companyId?: string;
+        contactId?: string;
+        campaignId?: string;
+        source?: string;
+        value?: number;
+      },
+    );
   }
 
   @Put(':id')

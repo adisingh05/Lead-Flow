@@ -25,9 +25,18 @@ export type AuthenticatedOrganization = {
   role: UserRole;
 };
 
+export type AuthenticatedMembership = {
+  id: string;
+  organizationId: string;
+  userId: string;
+  role: UserRole;
+};
+
 export type AuthContext = {
   user: AuthenticatedUser;
-  organization: AuthenticatedOrganization | null;
+  organization: AuthenticatedOrganization;
+  membership: AuthenticatedMembership;
+  role: UserRole;
   claims: ClerkTokenClaims;
 };
 

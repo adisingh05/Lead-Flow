@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -21,12 +22,22 @@ export class ClerkAuthGuard implements CanActivate {
       );
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.substring('Bearer '.length);
+
+    if (!token) {
+      throw new UnauthorizedException(
+        'Missing or invalid authorization header',
+      );
+    }
 
     try {
       request.auth = await this.authService.authenticate(token);
       return true;
-    } catch {
+    } catch (error: unknown) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

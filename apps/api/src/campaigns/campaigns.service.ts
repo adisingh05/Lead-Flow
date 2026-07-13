@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CampaignStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -76,8 +77,18 @@ export class CampaignsService {
     return this.prisma.campaign.create({ data });
   }
 
-  async update(id: string, data: { name?: string; status?: string }) {
-    return this.prisma.campaign.update({ where: { id }, data: data as any });
+  async update(
+    id: string,
+    data: { name?: string; status?: string; description?: string },
+  ) {
+    const { status, ...rest } = data;
+    return this.prisma.campaign.update({
+      where: { id },
+      data: {
+        ...rest,
+        ...(status ? { status: status as CampaignStatus } : {}),
+      },
+    });
   }
 
   async remove(id: string) {

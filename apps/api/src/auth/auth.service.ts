@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import type {
   ClerkClient,
@@ -10,6 +10,7 @@ import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   AuthContext,
+  AuthenticatedMembership,
   AuthenticatedOrganization,
   AuthenticatedUser,
   ClerkTokenClaims,
@@ -34,144 +35,71 @@ export class ClerkAuthService {
       secretKey: process.env.CLERK_SECRET_KEY,
     })) as ClerkTokenClaims;
 
-    const [clerkUser, clerkOrganization, clerkMemberships] = await Promise.all([
-      this.clerkClient.users.getUser(claims.sub),
-      claims.org_id
-        ? this.clerkClient.organizations.getOrganization({
-            organizationId: claims.org_id,
-          })
-        : Promise.resolve(null),
-      claims.org_id
-        ? this.clerkClient.organizations.getOrganizationMembershipList({
-            organizationId: claims.org_id,
-            limit: 100,
-          })
-        : Promise.resolve(null),
-    ]);
-
-    const clerkMembershipsList = clerkMemberships?.data ?? [];
-    const clerkUsersToSync = new Set<string>([clerkUser.id]);
-
-    for (const membership of clerkMembershipsList) {
-      const memberUserId = membership.publicUserData?.userId;
-
-      if (memberUserId) {
-        clerkUsersToSync.add(memberUserId);
-      }
+    if (!claims.org_id) {
+      throw new ForbiddenException('An active organization is required');
     }
 
-    const clerkUsers = await Promise.all(
-      [...clerkUsersToSync].map(
-        async (userId) =>
-          [userId, await this.clerkClient.users.getUser(userId)] as const,
-      ),
+    const [clerkUser, clerkOrganization, clerkMemberships] = await Promise.all([
+      this.clerkClient.users.getUser(claims.sub),
+      this.clerkClient.organizations.getOrganization({
+        organizationId: claims.org_id,
+      }),
+      this.clerkClient.organizations.getOrganizationMembershipList({
+        organizationId: claims.org_id,
+        userId: [claims.sub],
+        limit: 1,
+      }),
+    ]);
+
+    const currentMembership = clerkMemberships.data.find(
+      (membership) => membership.publicUserData?.userId === claims.sub,
     );
 
-    const clerkUsersById = new Map<string, ClerkUser>(clerkUsers);
-    const currentMembership = clerkMembershipsList.find(
-      (membership) => membership.publicUserData?.userId === clerkUser.id,
-    );
-    const currentRole = this.resolveCurrentRole(
+    if (!currentMembership) {
+      throw new ForbiddenException(
+        'A valid organization membership is required',
+      );
+    }
+
+    const currentRole = this.resolveMembershipRole(
       clerkOrganization,
-      claims,
       currentMembership,
+      claims.sub,
     );
 
     const result = await this.prisma.$transaction(async (transaction) => {
-      const syncedUsers = new Map<string, AuthenticatedUser>();
-
-      for (const [userId, clerkUserRecord] of clerkUsersById) {
-        const localUser = await this.upsertUser(transaction, clerkUserRecord);
-        syncedUsers.set(userId, localUser);
-      }
-
-      let localOrganization: Omit<AuthenticatedOrganization, 'role'> | null =
-        null;
-
-      if (clerkOrganization) {
-        localOrganization = await this.upsertOrganization(
-          transaction,
-          clerkOrganization,
-        );
-
-        for (const membership of clerkMembershipsList) {
-          const memberUserId = membership.publicUserData?.userId;
-
-          if (!memberUserId) {
-            continue;
-          }
-
-          const localMemberUser = syncedUsers.get(memberUserId);
-
-          if (!localMemberUser) {
-            continue;
-          }
-
-          await transaction.organizationMember.upsert({
-            where: {
-              organizationId_userId: {
-                organizationId: localOrganization.id,
-                userId: localMemberUser.id,
-              },
-            },
-            create: {
-              organizationId: localOrganization.id,
-              userId: localMemberUser.id,
-              role: this.resolveMembershipRole(
-                clerkOrganization,
-                membership,
-                memberUserId,
-              ),
-            },
-            update: {
-              role: this.resolveMembershipRole(
-                clerkOrganization,
-                membership,
-                memberUserId,
-              ),
-            },
-          });
-        }
-
-        const localCurrentUser = syncedUsers.get(clerkUser.id);
-
-        if (!localCurrentUser) {
-          throw new UnauthorizedException('Unable to sync authenticated user');
-        }
-
-        await transaction.organizationMember.upsert({
-          where: {
-            organizationId_userId: {
-              organizationId: localOrganization.id,
-              userId: localCurrentUser.id,
-            },
-          },
-          create: {
+      const localUser = await this.upsertUser(transaction, clerkUser);
+      const localOrganization = await this.upsertOrganization(
+        transaction,
+        clerkOrganization,
+      );
+      const localMembership = await transaction.organizationMember.upsert({
+        where: {
+          organizationId_userId: {
             organizationId: localOrganization.id,
-            userId: localCurrentUser.id,
-            role: currentRole,
+            userId: localUser.id,
           },
-          update: {
-            role: currentRole,
-          },
-        });
-      }
+        },
+        create: {
+          organizationId: localOrganization.id,
+          userId: localUser.id,
+          role: currentRole,
+        },
+        update: { role: currentRole },
+      });
 
       return {
-        user: syncedUsers.get(clerkUser.id),
+        user: localUser,
         organization: localOrganization,
+        membership: this.toAuthenticatedMembership(localMembership),
       };
     });
 
-    if (!result.user) {
-      throw new UnauthorizedException('Unable to sync authenticated user');
-    }
-
     return {
       user: result.user,
-      organization: result.organization
-        ? { ...result.organization, role: currentRole }
-        : null,
+      organization: { ...result.organization, role: currentRole },
+      membership: result.membership,
+      role: currentRole,
       claims,
     };
   }
@@ -246,26 +174,6 @@ export class ClerkAuthService {
     };
   }
 
-  private resolveCurrentRole(
-    clerkOrganization: ClerkOrganization | null,
-    claims: ClerkTokenClaims,
-    currentMembership: ClerkOrganizationMembership | undefined,
-  ): UserRole {
-    if (clerkOrganization?.createdBy === claims.sub) {
-      return UserRole.OWNER;
-    }
-
-    if (currentMembership) {
-      return this.resolveMembershipRole(
-        clerkOrganization,
-        currentMembership,
-        claims.sub,
-      );
-    }
-
-    return this.mapClerkRole(claims.org_role);
-  }
-
   private resolveMembershipRole(
     clerkOrganization: ClerkOrganization | null,
     membership: ClerkOrganizationMembership,
@@ -294,6 +202,20 @@ export class ClerkAuthService {
     }
 
     return UserRole.MEMBER;
+  }
+
+  private toAuthenticatedMembership(membership: {
+    id: string;
+    organizationId: string;
+    userId: string;
+    role: UserRole;
+  }): AuthenticatedMembership {
+    return {
+      id: membership.id,
+      organizationId: membership.organizationId,
+      userId: membership.userId,
+      role: membership.role,
+    };
   }
 
   private getPrimaryEmail(clerkUser: ClerkUser): string {
