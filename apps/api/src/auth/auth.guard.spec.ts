@@ -38,10 +38,10 @@ describe('ClerkAuthGuard', () => {
     claims: { sub: 'clerk_user_1', org_id: 'org_1' },
   };
 
- beforeEach(() => {
-   request.auth = undefined;
-   request.headers.authorization = 'Bearer valid-token';
- });
+  beforeEach(() => {
+    request.auth = undefined;
+    request.headers.authorization = 'Bearer valid-token';
+  });
 
   it('rejects a request without a bearer token', async () => {
     const authService = {
