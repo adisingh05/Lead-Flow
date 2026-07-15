@@ -5,12 +5,7 @@ export class CreateCompanyDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  organizationId: string;
+  name!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
