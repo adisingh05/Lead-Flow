@@ -6,7 +6,7 @@ dist/
 *.tsbuildinfo
 coverage/
 .prisma/
-ARCHITECTURE_AUDIT.md
+# ARCHITECTURE_AUDIT.md
 DATABASE_AUDIT.md
 BACKEND_AUDIT.md
 FRONTEND_AUDIT.md
