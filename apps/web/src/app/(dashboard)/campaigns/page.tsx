@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Search, Plus, Megaphone } from "lucide-react";
-import { useOrganizationStore } from "@/store/organization";
 import { useCampaigns, useCreateCampaign } from "@/hooks/useCampaigns";
 import Modal from "@/components/ui/Modal";
 
@@ -23,13 +22,7 @@ function formatDate(value?: string) {
   });
 }
 
-function AddCampaignForm({
-  organizationId,
-  onDone,
-}: {
-  organizationId: string;
-  onDone: () => void;
-}) {
+function AddCampaignForm({ onDone }: { onDone: () => void }) {
   const createCampaign = useCreateCampaign();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -40,7 +33,6 @@ function AddCampaignForm({
     createCampaign.mutate(
       {
         name: name.trim(),
-        organizationId,
         description: description.trim() || undefined,
       },
       { onSuccess: onDone },
@@ -101,13 +93,8 @@ function AddCampaignForm({
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const { organizationId } = useOrganizationStore();
 
-  const {
-    data: campaigns,
-    isLoading,
-    isError,
-  } = useCampaigns(organizationId ?? "");
+  const { data: campaigns, isLoading, isError } = useCampaigns();
   const list = campaigns ?? [];
 
   const filtered = list.filter((c) =>
@@ -285,10 +272,7 @@ export default function CampaignsPage() {
         onClose={() => setShowAddModal(false)}
         title="New Campaign"
       >
-        <AddCampaignForm
-          organizationId={organizationId ?? ""}
-          onDone={() => setShowAddModal(false)}
-        />
+        <AddCampaignForm onDone={() => setShowAddModal(false)} />
       </Modal>
     </div>
   );

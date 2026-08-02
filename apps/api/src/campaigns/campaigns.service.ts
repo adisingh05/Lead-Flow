@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CampaignStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { UpdateCampaignDto } from './dto/update-campaign.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -33,6 +35,7 @@ export class CampaignsService {
       replied: number;
       meetings: number;
     };
+
     const statsByCampaign = new Map<string, Stats>();
     campaigns.forEach((c) =>
       statsByCampaign.set(c.id, {
@@ -66,22 +69,33 @@ export class CampaignsService {
     });
   }
 
-  async findOne(id: string) {
-    return this.prisma.campaign.findUnique({
-      where: { id },
+  async findOne(organizationId: string, id: string) {
+    const campaign = await this.prisma.campaign.findFirst({
+      where: { id, organizationId },
       include: { sequences: true },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException(`Campaign not found`);
+    }
+
+    return campaign;
+  }
+
+  async create(organizationId: string, dto: CreateCampaignDto) {
+    return this.prisma.campaign.create({
+      data: {
+        name: dto.name,
+        description: dto.description,
+        organizationId,
+      },
     });
   }
 
-  async create(data: { name: string; organizationId: string }) {
-    return this.prisma.campaign.create({ data });
-  }
+  async update(organizationId: string, id: string, dto: UpdateCampaignDto) {
+    await this.findOne(organizationId, id);
 
-  async update(
-    id: string,
-    data: { name?: string; status?: string; description?: string },
-  ) {
-    const { status, ...rest } = data;
+    const { status, ...rest } = dto;
     return this.prisma.campaign.update({
       where: { id },
       data: {
@@ -91,7 +105,8 @@ export class CampaignsService {
     });
   }
 
-  async remove(id: string) {
+  async remove(organizationId: string, id: string) {
+    await this.findOne(organizationId, id);
     return this.prisma.campaign.delete({ where: { id } });
   }
 }

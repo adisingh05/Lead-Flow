@@ -7,11 +7,6 @@ export class CreateCampaignDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  organizationId: string;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

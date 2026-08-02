@@ -3,26 +3,21 @@ import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api";
 import { Campaign } from "@/types";
 
-export function useCampaigns(organizationId: string) {
+export function useCampaigns() {
   const { getToken } = useAuth();
 
   return useQuery<Campaign[]>({
-    queryKey: ["campaigns", organizationId],
+    queryKey: ["campaigns"],
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return apiClient<Campaign[]>(
-        `/api/campaigns?organizationId=${organizationId}`,
-        token,
-      );
+      return apiClient<Campaign[]>("/campaigns", token);
     },
-    enabled: !!organizationId,
   });
 }
 
 interface CreateCampaignInput {
   name: string;
-  organizationId: string;
   description?: string;
 }
 
@@ -34,7 +29,7 @@ export function useCreateCampaign() {
     mutationFn: async (input: CreateCampaignInput) => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return apiClient<Campaign>("/api/campaigns", token, {
+      return apiClient<Campaign>("/campaigns", token, {
         method: "POST",
         body: JSON.stringify(input),
       });
@@ -59,7 +54,7 @@ export function useUpdateCampaignStatus() {
     }) => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return apiClient<Campaign>(`/api/campaigns/${id}`, token, {
+      return apiClient<Campaign>(`/campaigns/${id}`, token, {
         method: "PUT",
         body: JSON.stringify({ status }),
       });
@@ -78,7 +73,7 @@ export function useDeleteCampaign() {
     mutationFn: async (id: string) => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return apiClient<void>(`/api/campaigns/${id}`, token, {
+      return apiClient<void>(`/campaigns/${id}`, token, {
         method: "DELETE",
       });
     },
