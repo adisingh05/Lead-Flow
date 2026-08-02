@@ -5,7 +5,7 @@ export class CreateCampaignDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -15,7 +15,7 @@ import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { ClerkAuthGuard } from '../auth/auth.guard';
 import { CurrentOrganization } from '../auth/current-organization.decorator';
-import { AuthenticatedOrganization } from '../auth/auth.types';
+import type { AuthenticatedOrganization } from '../auth/auth.types';
 
 @ApiTags('campaigns')
 @UseGuards(ClerkAuthGuard)
