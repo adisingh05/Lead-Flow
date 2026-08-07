@@ -30,7 +30,7 @@ function AddLeadForm({
   const createLead = useCreateLead();
   const { data: companies } = useCompanies(organizationId);
   const { data: contacts } = useContacts(organizationId);
-  const { data: campaigns } = useCampaigns(organizationId);
+  const { data: campaigns } = useCampaigns();
 
   const [companyId, setCompanyId] = useState("");
   const [contactId, setContactId] = useState("");
