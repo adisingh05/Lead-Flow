@@ -1,26 +1,42 @@
-import { IsString, IsOptional, IsIn, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsIn,
+  IsObject,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-const ACTIVITY_TYPES = [
-  'EMAIL_SENT',
-  'EMAIL_OPENED',
-  'EMAIL_CLICKED',
-  'EMAIL_REPLIED',
-  'CALL_MADE',
-  'CALL_ANSWERED',
-  'MEETING_SCHEDULED',
-  'MEETING_COMPLETED',
-  'NOTE_ADDED',
-  'TASK_CREATED',
-  'TASK_COMPLETED',
-  'LINKEDIN_MESSAGE',
+export const ACTIVITY_TYPES = [
+  'LEAD_CREATED',
+  'LEAD_UPDATED',
+  'EMAIL',
+  'CALL',
+  'MEETING',
+  'TASK',
+  'NOTE',
+  'CAMPAIGN',
+  'STATUS_CHANGE',
+  'CUSTOM',
 ] as const;
+
+export type ActivityTypeValue = (typeof ACTIVITY_TYPES)[number];
 
 export class CreateActivityDto {
   @ApiProperty({ enum: ACTIVITY_TYPES })
   @IsString()
   @IsIn(ACTIVITY_TYPES)
-  type!: (typeof ACTIVITY_TYPES)[number];
+  type!: ActivityTypeValue;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  title!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -30,7 +46,7 @@ export class CreateActivityDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  userId?: string;
+  leadId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -40,5 +56,10 @@ export class CreateActivityDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  leadId?: string;
+  companyId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  campaignId?: string;
 }
