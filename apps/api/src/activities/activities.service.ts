@@ -6,6 +6,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 
 @Injectable()
 export class ActivitiesService {
@@ -46,34 +47,33 @@ export class ActivitiesService {
     } = opts;
 
     const skip = (page - 1) * limit;
-
-    const where: Prisma.ActivityWhereInput = {
-      organizationId,
-      ...(leadId ? { leadId } : {}),
-      ...(contactId ? { contactId } : {}),
-      ...(companyId ? { companyId } : {}),
-      ...(campaignId ? { campaignId } : {}),
-      ...(userId ? { userId } : {}),
-      ...(type ? { type: type as any } : {}),
-      ...(search
-        ? {
-            OR: [
-              { title: { contains: search, mode: 'insensitive' as const } },
-              {
-                description: { contains: search, mode: 'insensitive' as const },
-              },
-            ],
-          }
-        : {}),
-      ...(from || to
-        ? {
-            createdAt: {
-              ...(from ? { gte: new Date(from) } : {}),
-              ...(to ? { lte: new Date(to) } : {}),
-            },
-          }
-        : {}),
-    };
+const where: Prisma.ActivityWhereInput & { organizationId?: string } = {
+  organizationId,
+  ...(leadId ? { leadId } : {}),
+  ...(contactId ? { contactId } : {}),
+  ...(companyId ? { companyId } : {}),
+  ...(campaignId ? { campaignId } : {}),
+  ...(userId ? { userId } : {}),
+  ...(type ? { type: type as any } : {}),
+  ...(search
+    ? {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' as const } },
+          {
+            description: { contains: search, mode: 'insensitive' as const },
+          },
+        ],
+      }
+    : {}),
+  ...(from || to
+    ? {
+        createdAt: {
+          ...(from ? { gte: new Date(from) } : {}),
+          ...(to ? { lte: new Date(to) } : {}),
+        },
+      }
+    : {}),
+};
 
     const [items, total] = await Promise.all([
       this.prisma.activity.findMany({
@@ -224,11 +224,7 @@ export class ActivitiesService {
 
   // ─── UPDATE ──────────────────────────────────────────────────────────────
 
-  async update(
-    organizationId: string,
-    id: string,
-    dto: Partial<CreateActivityDto>,
-  ) {
+  async update(organizationId: string, id: string, dto: UpdateActivityDto) {
     await this.findOne(organizationId, id);
 
     return this.prisma.activity.update({
